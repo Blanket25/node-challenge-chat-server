@@ -4,124 +4,59 @@ const cors = require("cors");
 const app = express();
 
 app.use(cors());
-app.use(express.json());
 
-const messages = [
-  { id: 0, from: "Bart", text: "Welcome to CYF chat system!" },
-  { id: 1, from: "Anne", text: "Good to see you" },
-  { id: 2, from: "Helen", text: "Long time, no see" },
-  { id: 3, from: "Anne", text: "let's go for a coffee" },
-  { id: 4, from: "Anne", text: "Good to see you 2" },
-  { id: 5, from: "Helen", text: "Long time, no see 2" },
-  { id: 6, from: "Anne", text: "let's go for a coffee 2" },
-  { id: 7, from: "Bart", text: "Welcome to CYF chat system! 2" },
-  { id: 8, from: "Anne", text: "Good to see you 3" },
-  { id: 9, from: "Helen", text: "Long time, no see 3" },
-  { id: 10, from: "Anne", text: "let's go for a coffee 3" },
-  { id: 11, from: "Helen", text: "Long time, no see 4" },
-  { id: 12, from: "Anne", text: "let's go for a coffee 4" }
-];
+const welcomeMessage = {
+  id: 0,
+  from: "Bart",
+  text: "Welcome to CYF chat system!",
+};
 
-function getNextId() {
-  const lastMessageIndex = messages.length - 1;
-  if (lastMessageIndex === -1) {
-    return 0;
-  } else {
-    const nextId = lastMessageIndex + 1;
-    return nextId;
+//This array is our "data store".
+//We will start with one message in the array.
+//Note: messages will be lost when Glitch restarts our server.
+const messages = [welcomeMessage];
+
+const getAllMessages = (request, response) => {
+  response.send(messages);
+};
+
+const getMessageById = (request, response) => {
+  const id = parseInt(request.params.id);
+  const foundMessage = messages.find((m) => m.id === id);
+  foundMessage
+    ? response.send(foundMessage)
+    : response.status(400).send("No message found");
+};
+
+const createNewMessage = (request, response) => {
+  const newMessage = request.body;
+
+  if (newMessage.text === "" || newMessage.from === "") {
+    response.status(400);
   }
-  // for json object, the id has to be a string: nextId.toString();
-}
 
-function isValidMessage(message) {
-  if (message.text && message.from) {
-    return true;
-  }
-  return false;
-}
+  const maxId = Math.max(...messages.map((m) => m.id));
+  newMessage.id = maxId + 1;
+  messages.push(newMessage);
+  response.send(newMessage);
+};
 
+const deleteMessage = (request, response) => {
+  const id = parseInt(request.params.id);
+  const foundMessage = messages.find((m) => m.id === id);
+  const foundMessageIndex = messages.indexOf(foundMessage);
+  const deletedMessage = messages.splice(foundMessageIndex, 1);
+  response.send(deletedMessage);
+};
+
+app.use(express.json); //es necesario si recolecto la info de un arr?
 app.get("/", function (request, response) {
   response.sendFile(__dirname + "/index.html");
 });
-
-app.get("/messages", (req, res) => {
-  res.status(201).send(messages);
-});
-
-
-app.get("/messages/search", (req, res) => {
-  // get search terms from query params
-  const searchTerm = req.query.text.toLowerCase()
-  // find messages containing the search term
-  const result = messages.filter(item => item.text.toLowerCase().includes(searchTerm))
-  // return them
-  res.send(result)
-})
-
-app.get("/messages/latest", (req, res) => {
-  // get the LAST 10 messages and return them
-  // slice with a negative number will create a new array with the items of the number, counting backwards
-  let result = messages.slice(-10)
-  res.send(result)
-});
-
-
-app.get("/messages/:id", (req, res) => {
-  const messageId = parseInt(req.params.id);
-  const message = messages.find((message) => message.id === messageId);
-  if (message) {
-    res.status(201).send(message);
-  } else {
-    res.status(404).send("This message does not exist");
-  }
-});
-
-
-
-app.post("/messages", (req, res) => {
-  const message = {
-    id:  getNextId(),
-    from: req.body.from,
-    text: req.body.text,
-  };
-  // add timestamp to each new message
-  message.timeSent = new Date()
-
-  if (!isValidMessage(message)) {
-    res.status(404).send("This message is not complete.");
-    return;
-  }
-  messages.push(message);
-  res.status(201).send(message);
-});
-
-app.put("/messages/:id", (req, res) => {
-  const messageId = parseInt(req.params.id);
-  let updatedMessage = req.body;
-
-  let message = messages.find((message) => message.id === messageId);
-  if (!message) {
-    res.status(404).send("This message does not exist");
-  }
-    message.from = updatedMessage.from;
-    message.text = updatedMessage.text;
-    timeSent = message.timeSent
-    res.status(201).send(updatedMessage);
-});
-
-app.delete("/messages/:id", (req, res) => {
-  const messageId = req.params.id;
-
-  const index = messages.findIndex((message) => message.id == messageId);
-  // findIndex() returns -1 if item is not found, but -1 should not be used as index: negative number is not a valid position
-  if (index === -1) {
-    res.status(404).send();
-    return;
-  }
-  // remove one item starting from the index that is found
-  messages.splice(index, 1);
-  res.status(201).send({ success: true });
-});
+app.get("/messages", getAllMessages);
+app.get("/messages/:id", getMessageById);
+app.post("/messages", createNewMessage);
+app.delete("/messages/:id", deleteMessage);
 
 app.listen(3000, () => {
   console.log("Listening on port 3000");
