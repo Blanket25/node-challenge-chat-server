@@ -32,6 +32,7 @@ const createNewMessage = (request, response) => {
   const newMessage = request.body;
 
   if (newMessage.text === "" || newMessage.from === "") {
+    //not working
     response.status(400);
   }
 
@@ -49,14 +50,37 @@ const deleteMessage = (request, response) => {
   response.send(deletedMessage);
 };
 
-app.use(express.json); //es necesario si recolecto la info de un arr?
+const searchMessage = (request, response) => {
+  const text = request.query.text;
+
+  const filteredMessages = messages.filter((m) => m.text.includes(text));
+
+  filteredMessages.length > 0
+    ? response.send(filteredMessages)
+    : response.status(404).send("No messages found");
+};
+
+const getTenRecent = (request, response) => {
+  let lastTen = messages.slice(-10);
+  response.send(lastTen);
+};
+
+const getThreeRecent = (request, response) => {
+  let lastThree = messages.slice(-3);
+  response.send(lastThree);
+};
+
+app.use(express.json());
 app.get("/", function (request, response) {
   response.sendFile(__dirname + "/index.html");
-});
+}); //y esto q es??
 app.get("/messages", getAllMessages);
-app.get("/messages/:id", getMessageById);
+app.get("/messages/search", searchMessage);
+app.get("/messages/last-three", getThreeRecent);
+app.get("/messages/latest", getTenRecent);
 app.post("/messages", createNewMessage);
 app.delete("/messages/:id", deleteMessage);
+app.get("/messages/:id", getMessageById);
 
 app.listen(3000, () => {
   console.log("Listening on port 3000");
