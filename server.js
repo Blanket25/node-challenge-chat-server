@@ -2,22 +2,25 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
+const fs = require("fs");
+const messages = require("./messages.json");
 
 app.use(cors());
 
-const welcomeMessage = {
-  id: 0,
-  from: "Bart",
-  text: "Welcome to CYF chat system!",
+const saveToJson = (messages) => {
+  const text = JSON.stringify(messages, null, 4);
+  fs.writeFileSync("./messages.json", text);
 };
 
-//This array is our "data store".
-//We will start with one message in the array.
-//Note: messages will be lost when Glitch restarts our server.
-const messages = [welcomeMessage];
+const getMessages = (request, response) => {
+  const limit = request.query.limit || messages.length;
+  const page = request.query.page || 1;
 
-const getAllMessages = (request, response) => {
-  response.send(messages);
+  let lastMessages = messages.slice(
+    (page - 1) * limit,
+    (page - 1) * limit + limit
+  );
+  response.send(lastMessages);
 };
 
 const getMessageById = (request, response) => {
@@ -31,15 +34,20 @@ const getMessageById = (request, response) => {
 const createNewMessage = (request, response) => {
   const newMessage = request.body;
 
-  if (newMessage.text === "" || newMessage.from === "") {
-    //not working
-    response.status(400);
+  if (
+    !newMessage.text ||
+    newMessage.text.trim().length === 0 ||
+    !newMessage.from ||
+    newMessage.from.trim().length === 0
+  ) {
+    response.status(400).send("Please put the required information");
+  } else {
+    const maxId = Math.max(...messages.map((m) => m.id));
+    newMessage.id = maxId + 1;
+    messages.push(newMessage);
+    saveToJson(messages);
+    response.send(newMessage);
   }
-
-  const maxId = Math.max(...messages.map((m) => m.id));
-  newMessage.id = maxId + 1;
-  messages.push(newMessage);
-  response.send(newMessage);
 };
 
 const deleteMessage = (request, response) => {
@@ -47,6 +55,7 @@ const deleteMessage = (request, response) => {
   const foundMessage = messages.find((m) => m.id === id);
   const foundMessageIndex = messages.indexOf(foundMessage);
   const deletedMessage = messages.splice(foundMessageIndex, 1);
+  saveToJson(messages);
   response.send(deletedMessage);
 };
 
@@ -60,24 +69,12 @@ const searchMessage = (request, response) => {
     : response.status(404).send("No messages found");
 };
 
-const getTenRecent = (request, response) => {
-  let lastTen = messages.slice(-10);
-  response.send(lastTen);
-};
-
-const getThreeRecent = (request, response) => {
-  let lastThree = messages.slice(-3);
-  response.send(lastThree);
-};
-
 app.use(express.json());
 app.get("/", function (request, response) {
   response.sendFile(__dirname + "/index.html");
 }); //y esto q es??
-app.get("/messages", getAllMessages);
+app.get("/messages", getMessages);
 app.get("/messages/search", searchMessage);
-app.get("/messages/last-three", getThreeRecent);
-app.get("/messages/latest", getTenRecent);
 app.post("/messages", createNewMessage);
 app.delete("/messages/:id", deleteMessage);
 app.get("/messages/:id", getMessageById);

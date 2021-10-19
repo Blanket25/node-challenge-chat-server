@@ -1,0 +1,97 @@
+[
+    {
+        "id": 0,
+        "from": "Bart",
+        "text": "Welcome to CYF chat system!"
+    },
+    {
+        "id": 1,
+        "from": "Pepe",
+        "text": "Hi, there!"
+    },
+    {
+        "id": 2,
+        "from": "Carlos",
+        "text": "Hello"
+    },
+    {
+        "id": 3,
+        "from": "Joe",
+        "text": "See you"
+    },
+    {
+        "id": 4,
+        "from": "Barbara",
+        "text": "Thaks xx"
+    },
+    {
+        "from": "John",
+        "text": "What?",
+        "id": 5
+    },
+    {
+        "id": 6,
+        "from": "Bart",
+        "text": "Welcome to CYF chat system!"
+    },
+    {
+        "id": 7,
+        "from": "Pepe",
+        "text": "Hi, there!"
+    },
+    {
+        "id": 8,
+        "from": "Carlos",
+        "text": "Hello"
+    },
+    {
+        "id": 9,
+        "from": "Joe",
+        "text": "See you"
+    },
+    {
+        "id": 10,
+        "from": "Barbara",
+        "text": "Thaks xx"
+    },
+    {
+        "from": "John",
+        "text": "What?",
+        "id": 11
+    },
+    {
+        "from": "John",
+        "text": "What?",
+        "id": 12
+    },
+    {
+        "from": "John",
+        "text": "What?",
+        "id": 13
+    },
+    {
+        "from": "John",
+        "text": "",
+        "id": 14
+    },
+    {
+        "from": "John",
+        "text": "",
+        "id": 15
+    },
+    {
+        "from": "John",
+        "text": "",
+        "id": 16
+    },
+    {
+        "from": "John",
+        "text": "",
+        "id": 17
+    },
+    {
+        "from": "John",
+        "text": "    ",
+        "id": 18
+    }
+]
